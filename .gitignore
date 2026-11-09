@@ -1,0 +1,3 @@
+# private HTTPS key for the local server — never publish
+cert/
+node_modules/
