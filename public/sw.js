@@ -1,5 +1,5 @@
 // Network-first: always get the latest version, fall back to the cached copy offline.
-const C = 'prism-v2';
+const C = 'prism-v3';
 self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(['./', 'index.html', 'icon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest']))); });
 self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
 self.addEventListener('fetch', e => {
