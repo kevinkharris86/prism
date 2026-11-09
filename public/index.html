@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#07060f">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <title>PRISM Keys</title>
 <style>
 :root{--bg:#07060f;--bg2:#0e0c1c;--card:rgba(255,255,255,.045);--line:rgba(255,255,255,.09);--tx:#ecebff;--mute:#9a97c0;--acc:#ff4fd8;--acc2:#4fd8ff;--good:#5dff9b;--bad:#ff4f6a}
@@ -954,6 +956,7 @@ function buildSetup(){const t=$('#tab-setup');
     range({label:'Fine tune ¢',min:-100,max:100,get:()=>S.fx.tune,set:v=>{S.fx.tune=v;S.fx.touched=true;applyFx()}}),
     hint('Transpose / tune here apply to the parts PRISM plays.'));
   const tools=card('Tools','#ffd84f',
+    h('div',{class:'row'},h('button',{class:'big tog on',style:'--c:#ffd84f',id:'installBtn',onclick:installApp},'📲 Install app')),
     h('div',{class:'row'},h('button',{onclick:()=>{const d=document.documentElement;(document.fullscreenElement?document.exitFullscreen():d.requestFullscreen&&d.requestFullscreen()).catch&&0}},'⛶ Fullscreen'),
       h('button',{id:'wakeBtn',onclick:wake},'☀ Keep screen on'),h('button',{onclick:resetKeyboardParts},'↺ Reset MIDI parts')),
     h('div',{class:'row'},h('button',{onclick:()=>{const blob=new Blob([JSON.stringify({S,SCENES,LIB},null,1)],{type:'application/json'});const a=h('a',{href:URL.createObjectURL(blob),download:'prism-backup.json'});a.click()}},'⇩ Backup'),
@@ -963,6 +966,16 @@ function buildSetup(){const t=$('#tab-setup');
   const monC=card(['MIDI monitor',h('span',{class:'sp'}),h('button',{onclick:()=>{MON.length=0;renderMon()}},'Clear')],'#9fe',hint('← from piano · → to piano. Play a key to check the connection.'),h('div',{id:'mon'}));
   t.append(h('div',{class:'grid'},conn,integ,fx,tools,monC));UI.syncSetup()}
 function renderMon(){const m=$('#mon');if(m){m.textContent=MON.slice().reverse().join('\n')||'(nothing yet)'}}
+/* ---------- install as an app (home-screen icon) ---------- */
+let installEvt=null;
+const isInstalled=()=>matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;const b=$('#installBtn');if(b)b.textContent='📲 Install app';
+  if(!isInstalled())setTimeout(()=>toast('📲 Install PRISM as an app: Setup → Install app',4000),3500)});
+window.addEventListener('appinstalled',()=>{installEvt=null;toast('PRISM installed — look for the icon on your home screen',5000)});
+async function installApp(){
+  if(isInstalled()){toast('You\'re already using the installed PRISM app');return}
+  if(installEvt){installEvt.prompt();const r=await installEvt.userChoice;installEvt=null;if(r.outcome!=='accepted')toast('Not installed — tap Install app again any time');return}
+  toast('In Chrome: tap ⋮ (top right) → "Add to Home screen" → Install',7000)}
 let wakeLock=null;async function wake(){try{if(wakeLock){await wakeLock.release();wakeLock=null;$('#wakeBtn').classList.remove('tog','on');return}wakeLock=await navigator.wakeLock.request('screen');$('#wakeBtn').classList.add('tog','on');toast('Screen will stay on')}catch(e){toast('Keep-awake not available here')}}
 document.addEventListener('visibilitychange',()=>{if(wakeLock&&document.visibilityState==='visible')navigator.wakeLock.request('screen').then(l=>wakeLock=l).catch(()=>{})});
 
